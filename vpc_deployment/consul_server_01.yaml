@@ -1,0 +1,87 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+ - consul
+write_files:
+- owner: root:root
+  path: /etc/consul/ssl/consul-agent-ca.pem
+  permissions: '0644'
+  content: |
+    ${ca_cert_chain}
+- owner: root:root
+  path: /etc/consul/ssl/server-consul-0.pem
+  permissions: '0644'
+  content: |
+    ${server_01_cert}
+- owner: root:root
+  path: /etc/consul/ssl/server-consul-0-key.pem
+  permissions: '0644'
+  content: |
+    ${server_01_key}
+- owner: root:root
+  path: /etc/consul/ssl/client-consul-0.pem
+  permissions: '0644'
+  content: |
+    ${client_cert}
+- owner: root:root
+  path: /etc/consul/ssl/client-consul-0-key.pem
+  permissions: '0644'
+  content: |
+    ${client_key}
+- owner: root:root
+  path: /etc/consul.d/00-server.json
+  permissions: '0644'
+  content: |
+    {
+        "datacenter": "${datacenter}",
+        "data_dir": "/var/lib/consul",
+        "encrypt": "${cluster_encrypt_key}",
+        "leave_on_terminate": true,
+        "rejoin_after_leave": true,
+        "bootstrap_expect": 3,
+        "server": true,
+        "addresses": {
+          "https": "0.0.0.0",
+          "dns" : "0.0.0.0"
+        },
+        "ports": {
+          "http": -1,
+          "https": 8501,
+          "dns": 8600,
+          "grpc": -1
+        },
+        "verify_incoming": true,
+        "verify_outgoing": true,
+        "verify_server_hostname": true,
+        "ca_file": "/etc/consul/ssl/consul-agent-ca.pem",
+        "cert_file": "/etc/consul/ssl/server-consul-0.pem",
+        "key_file": "/etc/consul/ssl/server-consul-0-key.pem",
+        "auto_encrypt": {
+          "allow_tls": true
+        },
+        "disable_remote_exec": true,
+        "enable_script_checks": true,
+        "dns_config": {
+            "enable_truncate": true,
+            "only_passing": true
+        },
+        "enable_syslog": true,
+        "ui": true
+    }
+- owner: root:root
+  path: /etc/consul/client.env
+  permissions: '0644'
+  content: |
+    export CONSUL_CLIENT_CERT=/etc/consul/ssl/client-consul-0.pem
+    export CONSUL_CLIENT_KEY=/etc/consul/ssl/client-consul-0-key.pem
+    export CONSUL_CACERT=/etc/consul/ssl/consul-agent-ca.pem
+    export CONSUL_HTTP_SSL=true
+    export CONSUL_HTTP_ADDR=https://127.0.0.1:8501
+runcmd:
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, consul.service ]
+  - [ systemctl, start, --no-block, consul.service ]
+power_state:
+  mode: reboot
+  condition: True
