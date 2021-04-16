@@ -190,6 +190,15 @@ variable "consul_ca_cert" {
 }
 
 ##################################################################################
+# consul_client_token - UUID token used to register nodes and services 
+##################################################################################
+variable "consul_client_token" {
+  type        = string
+  default     = ""
+  description = "UUID token used to register nodes and services"
+}
+
+##################################################################################
 # f5_include_bigip - Build VPC infrastructure for F5 BIG-IP ADC tier
 ##################################################################################
 variable "f5_include_bigip" {

@@ -51,14 +51,14 @@ write_files:
           "dns": 8600,
           "grpc": -1
         },
-        "verify_incoming": true,
+        "verify_incoming": false,
         "verify_outgoing": true,
         "verify_server_hostname": true,
         "ca_file": "/etc/consul/ssl/consul-agent-ca.pem",
         "cert_file": "/etc/consul/ssl/server-consul-1.pem",
         "key_file": "/etc/consul/ssl/server-consul-1-key.pem",
         "auto_encrypt": {
-          "allow_tls": true
+          "allow_tls": false
         },
         "disable_remote_exec": true,
         "enable_script_checks": true,
@@ -73,6 +73,42 @@ write_files:
         ]
     }
 - owner: root:root
+  path: /etc/consul.d/01-acls.json
+  permissions: '0644'
+  content: |
+    {
+      "acl": {
+        "enabled": true,
+        "default_policy": "deny",
+        "enable_token_persistence": true,
+        "tokens": {
+          "master": "${cluster_master_token}"
+        }
+       }  
+    }
+- owner: root:root
+  path: /etc/consul/default_policies/default-policy.hcl
+  permissions: '0644'
+  content: |
+    node_prefix "" {
+      policy = "read"
+    }
+    
+    service_prefix "" {
+      policy = "read"
+    }
+- owner: root:root
+  path: /etc/consul/default_policies/node-service-write.hcl
+  permissions: '0644'
+  content: |
+    node_prefix "" {
+      policy = "write"
+    }
+    
+    service_prefix "" {
+      policy = "write"
+    }
+- owner: root:root
   path: /etc/consul/client.env
   permissions: '0644'
   content: |
@@ -81,10 +117,22 @@ write_files:
     export CONSUL_CACERT=/etc/consul/ssl/consul-agent-ca.pem
     export CONSUL_HTTP_SSL=true
     export CONSUL_HTTP_ADDR=https://127.0.0.1:8501
+    export export CONSUL_HTTP_TOKEN='${cluster_master_token}'
+- owner: root:root
+  path: /etc/consul/default_policies/set_default_policies.sh
+  permissions: '0755'
+  content: |
+    #!/bin/bash
+    source /etc/consul/client.env
+    /usr/bin/consul acl policy create -name default-read -rules @/etc/consul/default_policies/default-policy.hcl
+    /usr/bin/consul acl policy create -name node-service-write -rules @/etc/consul/default_policies/node-service-write.hcl
+    /usr/bin/consul acl token update -id 00000000-0000-0000-0000-000000000002 -policy-name default-read
+    /usr/bin/consul acl token create -accessor='${client_token}' -secret='${client_token}' -policy-name='node-service-write'
 runcmd:
   - [ systemctl, daemon-reload ]
   - [ systemctl, enable, consul.service ]
   - [ systemctl, start, --no-block, consul.service ]
+  - [ /usr/bin/bash, /etc/consul/default_policies/set_default_policies.sh ]
 power_state:
   mode: reboot
   condition: True
