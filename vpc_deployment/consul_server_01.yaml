@@ -74,14 +74,56 @@ write_files:
   permissions: '0644'
   content: |
     {
+      "acl_datacenter": "${datacenter}",
+      "acl_master_token": "${cluster_master_token}",
+      "acl_agent_token": "${server_agent_token}",
+      "acl_default_policy": "deny",
       "acl": {
         "enabled": true,
-        "default_policy": "deny",
-        "enable_token_persistence": true,
-        "tokens": {
-          "master": "${cluster_master_token}"
+        "enable_token_persistence": true
+      }
+    }
+- owner: root:root
+  path: /etc/consul/default_policies/consul-services.json
+  permissions: '0644'
+  content: |
+    {
+      "services": [
+        {
+          "id": "adn-consul-https",
+          "name": "adn-consul-https",
+          "address": "__HOST_ADDRESS__",
+          "port": 8501
+        },
+        {
+          "id": "adn-consul-dns",
+          "name": "adn-consul-dns",
+          "address": "__HOST_ADDRESS__",
+          "port": 8600
         }
-       }  
+      ]
+    }
+- owner: root:root
+  path: /etc/consul/default_policies/server-agent-policy.hcl
+  permissions: '0644'
+  content: |
+    agen_prefix "" {
+      policy = "write"
+    }
+    key_prefix "" {
+      policy = "write"
+    }
+    node_prefix "" {
+      policy = "write"
+    }
+    service_prefix "" {
+      policy = "write"
+    }
+    event_prefix "" {
+      policy = "write"
+    }
+    query_prefix "" {
+      policy = "write"
     }
 - owner: root:root
   path: /etc/consul/default_policies/default-policy.hcl
@@ -90,7 +132,6 @@ write_files:
     node_prefix "" {
       policy = "read"
     }
-    
     service_prefix "" {
       policy = "read"
     }
@@ -114,22 +155,54 @@ write_files:
     export CONSUL_CACERT=/etc/consul/ssl/consul-agent-ca.pem
     export CONSUL_HTTP_SSL=true
     export CONSUL_HTTP_ADDR=https://127.0.0.1:8501
-    export export CONSUL_HTTP_TOKEN='${cluster_master_token}'
+    export CONSUL_HTTP_TOKEN='${cluster_master_token}'  
 - owner: root:root
   path: /etc/consul/default_policies/set_default_policies.sh
   permissions: '0755'
   content: |
     #!/bin/bash
     source /etc/consul/client.env
-    /usr/bin/consul acl policy create -name default-read -rules @/etc/consul/default_policies/default-policy.hcl
-    /usr/bin/consul acl policy create -name node-service-write -rules @/etc/consul/default_policies/node-service-write.hcl
-    /usr/bin/consul acl token update -id 00000000-0000-0000-0000-000000000002 -policy-name default-read
-    /usr/bin/consul acl token create -accessor='${client_token}' -secret='${client_token}' -policy-name='node-service-write'
+    # Wait until the cluster is up and the anonymous ACL token shows up
+    anon_token=$(/usr/bin/consul acl token list|grep 'Anonymous Token'|wc -l)
+    while [[ "$anon_token" != "1" ]]
+    do
+      sleep 5
+      exit 0
+    done
+    # Server agent has full access
+    server_agent_policy=$(/usr/bin/consul acl policy list|grep server-agent|wc -l)
+    if [[ "$server_agent_policy" -eq "0" ]]
+    then
+      /usr/bin/consul acl policy create -name server-agent -rules @/etc/consul/default_policies/server-agent-policy.hcl
+      /usr/bin/consul acl token create -accessor='${server_agent_token}' -secret='${server_agent_token}' -policy-name='server-agent'
+    fi
+    # Assure anonymous read and token read-write
+    read_policy=$(/usr/bin/consul acl policy list|grep default-read|wc -l)
+    if [[ "$read_policy" -eq "0" ]]
+    then
+      /usr/bin/consul acl policy create -name default-read -rules @/etc/consul/default_policies/default-policy.hcl
+      /usr/bin/consul acl token update -id 00000000-0000-0000-0000-000000000002 -policy-name default-read
+    fi
+    read_write_policy=$(/usr/bin/consul acl policy list|grep node-service-write|wc -l)
+    if [[ "$read_write_policy" -eq "0" ]]
+    then
+      /usr/bin/consul acl policy create -name node-service-write -rules @/etc/consul/default_policies/node-service-write.hcl
+      /usr/bin/consul acl token create -accessor='${client_token}' -secret='${client_token}' -policy-name='node-service-write'
+    fi
+    # keep local services registered
+    host_address=$(ip route get 1.1.1.1 | grep -oP 'src \K\S+')
+    /usr/bin/sed -i "s/__HOST_ADDRESS__/$host_address/g" /etc/consul/default_policies/consul-services.json
+    /usr/bin/consul services register /etc/consul/default_policies/consul-services.json
+- owner: root:root
+  path: /etc/cron.d/setup_default_policies
+  permissions: '0644'
+  content: |
+    @reboot root /etc/consul/default_policies/set_default_policies.sh &
+    */5 * * * * root /etc/consul/default_policies/set_default_policies.sh &
 runcmd:
   - [ systemctl, daemon-reload ]
   - [ systemctl, enable, consul.service ]
   - [ systemctl, start, --no-block, consul.service ]
-  - [ /usr/bin/bash, /etc/consul/default_policies/set_default_policies.sh ]
 power_state:
   mode: reboot
   condition: True

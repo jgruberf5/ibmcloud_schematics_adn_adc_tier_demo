@@ -172,24 +172,6 @@ variable "consul_instance_profile" {
 }
 
 ##################################################################################
-# consul_ca_key - PEM format ca private key
-##################################################################################
-variable "consul_ca_key" {
-  type        = string
-  default     = ""
-  description = "PEM format ca private key"
-}
-
-##################################################################################
-# consul_ca_cert - PEM format ca cert 
-##################################################################################
-variable "consul_ca_cert" {
-  type        = string
-  default     = ""
-  description = "PEM format ca certificate"
-}
-
-##################################################################################
 # consul_client_token - UUID token used to register nodes and services 
 ##################################################################################
 variable "consul_client_token" {

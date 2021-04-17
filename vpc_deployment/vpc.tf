@@ -148,4 +148,3 @@ output "latitude" {
 output "longitude" {
   value = lookup(local.vpc_gen2_region_location_map, var.ibm_region).longitude
 }
-
