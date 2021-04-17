@@ -163,6 +163,18 @@ variable "volterra_ipsec_tunnels" {
 }
 
 ##################################################################################
+# volterra_internal_networks - Internal reachable networks
+##################################################################################
+variable "volterra_internal_networks" {
+  type = list(object({
+    cidr = string
+    gw = string
+  }))
+  default = [ ]
+  description = "Internal reachable networks"
+}
+
+##################################################################################
 # consul_instance_profile - The name of the VPC profile to use for the Consul instances
 ##################################################################################
 variable "consul_instance_profile" {
