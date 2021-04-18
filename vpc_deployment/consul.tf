@@ -25,8 +25,8 @@ resource "tls_self_signed_cert" "ca_cert" {
     organization = var.volterra_tenant
   }
   validity_period_hours = 87659
-  is_ca_certificate = true
-  set_subject_key_id = true
+  is_ca_certificate     = true
+  set_subject_key_id    = true
   allowed_uses = [
     "digital_signature",
     "cert_signing",
@@ -180,7 +180,7 @@ resource "tls_locally_signed_cert" "client_signed" {
 
 locals {
   cluster_master_token = uuid()
-  server_agent_token = uuid()
+  server_agent_token   = uuid()
   client_token         = var.consul_client_token == "" ? uuid() : var.consul_client_token
 }
 
@@ -221,14 +221,6 @@ resource "ibm_is_instance" "consul_server_01_instance" {
     delete = "120m"
   }
 }
-
-resource "ibm_is_floating_ip" "consul_server_01_floating_ip" {
-  name           = "fip-f5-consul-server-01-${random_uuid.namer.result}"
-  resource_group = data.ibm_resource_group.group.id
-  target         = ibm_is_instance.consul_server_01_instance.primary_network_interface.0.id
-}
-
-
 data "template_file" "consul_server_02" {
   template = file("${path.module}/consul_server_02.yaml")
   vars = {

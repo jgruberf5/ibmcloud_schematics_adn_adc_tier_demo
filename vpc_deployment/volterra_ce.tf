@@ -26,12 +26,19 @@ locals {
 }
 
 data "external" "volterra_site" {
-  program = ["python3", "${path.module}/volterra_data_source_site_token_creator.py"]
+  program = ["python3", "${path.module}/volterra_data_source_site_creator.py"]
   query = {
     tenant = var.volterra_tenant
     token = var.volterra_api_token
     site_name = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}"
     fleet_name = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}"
+    internal_networks = jsonencode(var.volterra_internal_networks)
+    consul_servers = jsonencode([
+      "${ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address}:8501",
+      "${ibm_is_instance.consul_server_02_instance.primary_network_interface.0.primary_ipv4_address}:8501",
+      "${ibm_is_instance.consul_server_03_instance.primary_network_interface.0.primary_ipv4_address}:8501"
+    ])
+    ca_cert_encoded = base64encode(tls_self_signed_cert.ca_cert.cert_pem)
   }
   count = local.volterra_tier_count
 }

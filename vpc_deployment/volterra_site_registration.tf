@@ -44,7 +44,7 @@ resource "null_resource" "site_token_fleet_delete" {
 
   provisioner "local-exec" {
     when       = destroy
-    command    = "${path.module}/volterra_resource_site_token_destroy.py --site '${self.triggers.site_name}' --fleet '${self.triggers.fleet_name}' --tenant '${self.triggers.tenant}' --token '${self.triggers.token}'"
+    command    = "${path.module}/volterra_resource_site_destroy.py --site '${self.triggers.site_name}' --fleet '${self.triggers.fleet_name}' --tenant '${self.triggers.tenant}' --token '${self.triggers.token}'"
     on_failure = continue
   }
 }
