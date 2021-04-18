@@ -5,7 +5,7 @@
 This Schematics Workspace module lifecycle manages:
 
 - IBM VPC Gen2 VPC
-- IBM VPC Subnets with the created VPC
+- IBM VPC Subnets within the created VPC
 - IBM Custom Images for
 
     - Volterra CE Generic Hardware
@@ -20,3 +20,6 @@ This Schematics Workspace module lifecycle manages:
 - Volterra Virtual Network exporting routes to IBM Transit Gateway networks
 - Votlerra Discovery for Consul VSIs
 - BIGIQ VSIs (optional)
+
+The application results in the necessary Volterra system namespace resources required to connect workloads routable via IBM Transit Gateway to the Volterra ADN. The output includes the CA certificate and the Consul client access token to register services with the Consul cluster which in-turn becomes available to the Volterra ADN as origin pool members and endpoints.
+
