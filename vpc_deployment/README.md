@@ -22,35 +22,52 @@ This Schematics Workspace module lifecycle manages:
 - BIGIQ VSIs (optional)
 
 The application of this Workspace module results in the necessary Volterra system namespace resources required to connect workloads routable via IBM Transit Gateways to the Volterra ADN. The output includes the CA certificate and the Consul client access token to register services with the Consul cluster which in-turn becomes available by service name to the Volterra ADN.
-### Required values
-Fill in the following values, based on the steps that you completed before you began.
+### Variables values
+You will have to define the following variables:
 
-| Key | Definition | Value Example |
-| --- | ---------- | ------------- |
-| `region` | The VPC region that you want your BIG-IP™ to be provisioned. | us-south |
-| `instance_name` | The name of the VNF instance to be provisioned. | f5-ve-01 |
-| `hostname` | The hostname you want your BIG-IP™ to be provisioned. | f5-ve-01 |
-| `domain` | The domain you want your BIG-IP™ to be provisioned. | local |
-| `tmos_image_name` | The name of the VNF image  | bigip-15-1-2-0-0-9-all-1slot |
-| `instance_profile` | The profile of compute CPU and memory resources to be used when provisioning the BIG-IP™ instance. To list available profiles, run `ibmcloud is instance-profiles`. | cx2-4x8 |
-| `ssh_key_name` | The name of your public SSH key to be used. Follow [Public SSH Key Doc](https://cloud.ibm.com/docs/vpc-on-classic-vsi?topic=vpc-on-classic-vsi-ssh-keys) for creating and managing ssh key. | linux-ssh-key |
-| `management_subnet_id` | The ID of the management subnet where the instance will be deployed. Click on the subnet details in the VPC Subnet Listing to determine this value | 0717-xxxxxx-xxxx-xxxxx-8fae-xxxxx |
-| `external_subnet_id` | The ID of the external subnet where the instance listens for virtual services. Click on the subnet details in the VPC Subnet Listing to determine this value | 0717-xxxxxx-xxxx-xxxxx-8110-xxxxx |
-
-### Optional values
-Fill in the following values, based on the steps that you completed before you began.
-
-| Key | Definition | Value Example |
-| --- | ---------- | ------------- |
-| `tmos_admin_password` | The password to set for the BIG-IP™ admin user. | valid TMOS password |
-| `cluster_subnet_id` | The ID of the management dedicated to configsync operations. Click on the subnet details in the VPC Subnet Listing to determine this value | 0717-xxxxxx-xxxx-xxxxx-8fae-xxxxx |
-| `internal_subnet_id` | The ID of the internal subnet where the instance will communicate to internal resources. Click on the subnet details in the VPC Subnet Listing to determine this value | 0717-xxxxxx-xxxx-xxxxx-8fae-xxxxx |
-| `do_declaration_url` | The URL to retrieve the f5-declarative-onboarding JSON declaration  | https://declarations.s3.us-east.cloud-object-storage.appdomain.cloud/do_declaration.json |
-| `as3_declaration_url` | The URL to retrieve the f5-appsvcs-extension JSON declaration  | https://declarations.s3.us-east.cloud-object-storage.appdomain.cloud/as3_declaration.json |
-| `ts_declaration_url` | The URL to retrieve the f5-telemetry-streaming JSON declaration  | https://declarations.s3.us-east.cloud-object-storage.appdomain.cloud/ts_declaration.json |
-| `phone_home_url` | The URL for post onboarding web hook  | https://webhook.site/#!/8c71ed42-da62-48ea-a2a5-265caf420a3b |
-| `tgactive_url` | The URL to POST L3 device configurations when TMOS tgactive script is executed |
-| `tgstandby_url` | The URL to POST L3 device configurations when TMOS tgstandby script is executed |
-| `tgrefresh_url` | The URL to POST L3 device configurations when TMOS tgrefresh script is executed |
-| `app_id` | Application ID used for CI integration | a044b708-66c4-4f50-a5c8-2b54eff5f9b5 |
-
+| Key | Definition | Required/Optional | Default Value |
+| --- | ---------- | ----------------- | ------------- |
+| `ibm_resource_group` | The resource group to create the VPC and VSIs | optional | default |
+| `ibm_region` | The IBM Cloud region to create the VPC | optional | us-south |
+| `ibm_zone` | The zone number within the region to create the VPC | optional | 1 |
+| `ibm_vpc_name` | VPC name, will also be the Volterra site name prefix | required |  |
+| `ibm_vpc_index` | Index number allowing for mulitple VPC in the same zone  | required | 1 |
+| `ibm_vpc_cidr` | The VPC prefix CIDR | required | |
+| `ibm_transit_gateway_id` | The optional IBM transit gateway to connect the VPC | optional | |
+| `ibm_ssh_key_name` | The name of the IBM stored SSH key to inject into VSIs | required |  |
+| `ibm_download_region` | The IBM COS region to download the custom images | optional | us-south |
+| `volterra_include_ce` | Create Volterra CE VSIs and Volterra ADN objects | optional | true |
+| `volterra_ce_version` | The Volterra version to download from the F5 COS catalog | optional | 7.2009.5 |
+| `volterra_ce_profile` | The VSI profile to use for Volterra CE instances | optional | cx2-4x8 |
+| `volterra_tenant` | The Volterra tenant (group) name | required | |
+| `volterra_api_token` | The Volterra API token used to manage Volterra resources | required | |
+| `volterra_cluster_size` | The number of Volterra CE instances in the site cluster | optional | 3 |
+| `volterra_voltstack` | Add the Voltstack components to the Voltmesh in the CE instances | optional | false |
+| `volterra_admin_password` | The admin user password for the CE instances | optional | randomized string |
+| `volterra_ssl_tunnels` | Allow SSL tunnels to connect the Volterra CE to the RE | optional | false |
+| `volterra_ipsec_tunnels` | Allow IPSEC tunnels to connect the Volterra CE to the RE | optional | true |
+| `volterra_internal_networks` | List of HCL object defining IPv4 CIDRs (cidr attribute) and IPv4 gateway (gw attribute) to connect via the CE VSIs | optional | [] |
+| `consul_instance_profile` | The VSI profile to use for Consul instances | optional | cx2-4x8 |
+| `consul_client_token` | The UUID value to use for the Consul client ACL token | optional | auto generate |
+| `f5_include_bigip` | Include BIG-IP, BIGIQ components in deploy | optional | true |
+| `f5_bigip_version` | The BIG-IP version to downlaod from the F5 COS catalog | optional | 15.1 |
+| `f5_bigiq_version` | The BIGIQ version to download from the F5 COS catalog | optional | 7.1 |
+| `f5_bigiq_profile` | The VSI profile to use for BIGIQ instances | optional | bx2-4x16 |
+| `f5_bigiq_ha_instance` | Create a secondary BIGIQ instance for HA | optional | false |
+| `f5_bigiq_admin_password` | The password to set for the admin BIGIQ users | optional | randomized string |
+| `f5_bigiq_management_floating_ip` | Create a floating IP for the BIGIQ first instance | optional | false |
+| `f5_bigiq_license_basekey` | The license basekey to use for the BIGIQ first instance | optional ||
+| `f5_bigiq_ha_license_basekey` | The license basekey to use for the BIGIQ HA instance | optional ||
+| `f5_bigiq_license_type` | Type of license pool to crete on the BIGIQ first instance. Myst be none, regkeypool, or utilitypool. | optional | none |
+| `f5_bigiq_license_pool_name` | The BIGIQ license pool name to create | optional ||
+| `f5_bigiq_utility_regkey` | The utility pool regkey to build BIGIQ licenses | optional ||
+| `f5_bigiq_license_offerings_1` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_2` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_3` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_4` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_5` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_6` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_7` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_8` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_9` | The BIGIQ regkey pool licenes entry | optional ||
+| `f5_bigiq_license_offerings_10` | The BIGIQ regkey pool licenes entry | optional ||

@@ -86,7 +86,7 @@ variable "volterra_include_ce" {
 ##################################################################################
 variable "volterra_ce_version" {
   type        = string
-  default     = ""
+  default     = "7.2009.5"
   description = "The version of Volterra CE image to Import"
 }
 
