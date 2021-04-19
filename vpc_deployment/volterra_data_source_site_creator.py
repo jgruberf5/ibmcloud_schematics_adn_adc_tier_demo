@@ -191,7 +191,7 @@ def assure_fleet(tenant, token, fleet_name, tenant_id, internal_networks):
                 data = {
                     "namespace": "system",
                     "metadata": {
-                        "name": "f5-dataai-app-1-us-south-3-1",
+                        "name": fleet_name,
                         "namespace": None,
                                 "labels": {},
                                 "annotations": {},
