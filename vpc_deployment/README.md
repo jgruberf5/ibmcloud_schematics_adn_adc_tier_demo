@@ -58,7 +58,7 @@ You will have to define the following variables:
 | `f5_bigiq_management_floating_ip` | Create a floating IP for the BIGIQ first instance | optional | false |
 | `f5_bigiq_license_basekey` | The license basekey to use for the BIGIQ first instance | optional ||
 | `f5_bigiq_ha_license_basekey` | The license basekey to use for the BIGIQ HA instance | optional ||
-| `f5_bigiq_license_type` | Type of license pool to crete on the BIGIQ first instance. Myst be none, regkeypool, or utilitypool. | optional | none |
+| `f5_bigiq_license_type` | Type of license pool to crete on the BIGIQ first instance. Must be `none`, `regkeypool`, or `utilitypool`. | optional | none |
 | `f5_bigiq_license_pool_name` | The BIGIQ license pool name to create | optional ||
 | `f5_bigiq_utility_regkey` | The utility pool regkey to build BIGIQ licenses | optional ||
 | `f5_bigiq_license_offerings_1` | The BIGIQ regkey pool licenes entry | optional ||
