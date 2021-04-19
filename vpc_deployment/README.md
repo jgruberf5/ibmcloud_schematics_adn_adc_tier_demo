@@ -21,5 +21,7 @@ This Schematics Workspace module lifecycle manages:
 - Votlerra Discovery for Consul VSIs
 - BIGIQ VSIs (optional)
 
-The application results in the necessary Volterra system namespace resources required to connect workloads routable via IBM Transit Gateway to the Volterra ADN. The output includes the CA certificate and the Consul client access token to register services with the Consul cluster which in-turn becomes available to the Volterra ADN as origin pool members and endpoints.
+The application of this Workspace module results in the necessary Volterra system namespace resources required to connect workloads routable via IBM Transit Gateways to the Volterra ADN. The output includes the CA certificate and the Consul client access token to register services with the Consul cluster which in-turn becomes available by service name to the Volterra ADN.
+
+
 
