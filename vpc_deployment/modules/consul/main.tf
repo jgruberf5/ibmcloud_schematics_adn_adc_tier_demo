@@ -1,6 +1,10 @@
+data "ibm_resource_group" "group" {
+  name = var.resource_group
+}
+
 # lookup compute profile by name
 data "ibm_is_instance_profile" "consul_instance_profile" {
-  name = var.consul_instance_profile
+  name = var.instance_profile
 }
 
 # lookup image name for a custom image in region if we need it
@@ -21,8 +25,8 @@ resource "tls_self_signed_cert" "ca_cert" {
   key_algorithm   = "ECDSA"
   private_key_pem = tls_private_key.ca_key.private_key_pem
   subject {
-    common_name  = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-ca.consul"
-    organization = var.volterra_tenant
+    common_name  = "${var.datacenter}-ca.consul"
+    organization = var.organization
   }
   validity_period_hours = 87659
   is_ca_certificate     = true
@@ -44,15 +48,15 @@ resource "tls_cert_request" "server_01_cert_request" {
   private_key_pem = tls_private_key.server_01_cert.private_key_pem
   dns_names = [
     "localhost",
-    "server.${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}.consul",
+    "server.${var.datacenter}.consul",
     "volterra-discovery.consul"
   ]
   ip_addresses = [
     "127.0.0.1"
   ]
   subject {
-    common_name  = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-server-01.consul"
-    organization = var.volterra_tenant
+    common_name  = "${var.datacenter}-server-01.consul"
+    organization = var.organization
   }
 }
 
@@ -80,15 +84,15 @@ resource "tls_cert_request" "server_02_cert_request" {
   private_key_pem = tls_private_key.server_02_cert.private_key_pem
   dns_names = [
     "localhost",
-    "server.${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}.consul",
+    "server.${var.datacenter}.consul",
     "volterra-discovery.consul"
   ]
   ip_addresses = [
     "127.0.0.1"
   ]
   subject {
-    common_name  = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-server-02.consul"
-    organization = var.volterra_tenant
+    common_name  = "${var.datacenter}-server-02.consul"
+    organization = var.organization
   }
 }
 
@@ -116,15 +120,15 @@ resource "tls_cert_request" "server_03_cert_request" {
   private_key_pem = tls_private_key.server_03_cert.private_key_pem
   dns_names = [
     "localhost",
-    "server.${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}.consul",
+    "server.${var.datacenter}.consul",
     "volterra-discovery.consul"
   ]
   ip_addresses = [
     "127.0.0.1"
   ]
   subject {
-    common_name  = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-server-03.consul"
-    organization = var.volterra_tenant
+    common_name  = "${var.datacenter}-server-03.consul"
+    organization = var.organization
   }
 }
 
@@ -152,15 +156,15 @@ resource "tls_cert_request" "client_cert_request" {
   private_key_pem = tls_private_key.client_cert.private_key_pem
   dns_names = [
     "localhost",
-    "client.${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}.consul",
+    "client.${var.datacenter}.consul",
     "volterra-discovery.consul"
   ]
   ip_addresses = [
     "127.0.0.1"
   ]
   subject {
-    common_name  = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-client.consul"
-    organization = var.volterra_tenant
+    common_name  = "${var.datacenter}-client.consul"
+    organization = var.organization
   }
 }
 
@@ -181,7 +185,7 @@ resource "tls_locally_signed_cert" "client_signed" {
 locals {
   cluster_master_token = uuid()
   server_agent_token   = uuid()
-  client_token         = var.consul_client_token == "" ? uuid() : var.consul_client_token
+  client_token         = var.client_token == "" ? uuid() : var.client_token
 }
 
 data "template_file" "consul_server_01" {
@@ -196,26 +200,25 @@ data "template_file" "consul_server_01" {
     cluster_master_token = local.cluster_master_token
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
-    datacenter           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}"
+    datacenter           = var.datacenter
   }
 }
 
 # create server 01
 resource "ibm_is_instance" "consul_server_01_instance" {
-  name           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-consul-01"
+  name           = "${var.datacenter}-consul-01"
   resource_group = data.ibm_resource_group.group.id
   image          = data.ibm_is_image.ubuntu.id
   profile        = data.ibm_is_instance_profile.consul_instance_profile.id
   primary_network_interface {
     name            = "internal"
-    subnet          = ibm_is_subnet.internal.id
-    security_groups = [ibm_is_vpc.vpc.default_security_group]
+    subnet          = var.subnet_id
+    security_groups = [var.security_group_id]
   }
-  vpc        = ibm_is_subnet.internal.vpc
-  zone       = ibm_is_subnet.internal.zone
-  keys       = [data.ibm_is_ssh_key.ssh_key.id]
+  vpc        = var.vpc
+  zone       = var.zone
+  keys       = [var.ssh_key_id]
   user_data  = data.template_file.consul_server_01.rendered
-  depends_on = [ibm_is_security_group_rule.allow_outbound]
   timeouts {
     create = "60m"
     delete = "120m"
@@ -233,27 +236,26 @@ data "template_file" "consul_server_02" {
     cluster_master_token = local.cluster_master_token
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
-    datacenter           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}"
+    datacenter           = var.datacenter
     server_1_ip_address  = ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address
   }
 }
 
 # create server 02
 resource "ibm_is_instance" "consul_server_02_instance" {
-  name           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-consul-02"
+  name           = "${var.datacenter}-consul-02"
   resource_group = data.ibm_resource_group.group.id
   image          = data.ibm_is_image.ubuntu.id
   profile        = data.ibm_is_instance_profile.consul_instance_profile.id
   primary_network_interface {
     name            = "internal"
-    subnet          = ibm_is_subnet.internal.id
-    security_groups = [ibm_is_vpc.vpc.default_security_group]
+    subnet          = var.subnet_id
+    security_groups = [var.security_group_id]
   }
-  vpc        = ibm_is_subnet.internal.vpc
-  zone       = ibm_is_subnet.internal.zone
-  keys       = [data.ibm_is_ssh_key.ssh_key.id]
+  vpc        = var.vpc
+  zone       = var.zone
+  keys       = [var.ssh_key_id]
   user_data  = data.template_file.consul_server_02.rendered
-  depends_on = [ibm_is_security_group_rule.allow_outbound]
   timeouts {
     create = "60m"
     delete = "120m"
@@ -272,7 +274,7 @@ data "template_file" "consul_server_03" {
     cluster_master_token = local.cluster_master_token
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
-    datacenter           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}"
+    datacenter           = var.datacenter
     server_1_ip_address  = ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address
     server_2_ip_address  = ibm_is_instance.consul_server_02_instance.primary_network_interface.0.primary_ipv4_address
   }
@@ -280,50 +282,33 @@ data "template_file" "consul_server_03" {
 
 # create server 03
 resource "ibm_is_instance" "consul_server_03_instance" {
-  name           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-consul-03"
+  name           = "${var.datacenter}-consul-03"
   resource_group = data.ibm_resource_group.group.id
   image          = data.ibm_is_image.ubuntu.id
   profile        = data.ibm_is_instance_profile.consul_instance_profile.id
   primary_network_interface {
     name            = "internal"
-    subnet          = ibm_is_subnet.internal.id
-    security_groups = [ibm_is_vpc.vpc.default_security_group]
+    subnet          = var.subnet_id
+    security_groups = [var.security_group_id]
   }
-  vpc        = ibm_is_subnet.internal.vpc
-  zone       = ibm_is_subnet.internal.zone
-  keys       = [data.ibm_is_ssh_key.ssh_key.id]
+  vpc        = var.vpc
+  zone       = var.zone
+  keys       = [var.ssh_key_id]
   user_data  = data.template_file.consul_server_03.rendered
-  depends_on = [ibm_is_security_group_rule.allow_outbound]
   timeouts {
     create = "60m"
     delete = "120m"
   }
 }
 
-output "consul_datacenter" {
-  value = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}"
-}
-
-output "consul_datacenter_ca_certificate" {
-  value = tls_self_signed_cert.ca_cert.cert_pem
-}
-
-output "consul_client_token" {
-  value = local.client_token
-}
-
-output "consul_https_endpoints" {
-  value = [
-    "${ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address}:8501",
-    "${ibm_is_instance.consul_server_02_instance.primary_network_interface.0.primary_ipv4_address}:8501",
-    "${ibm_is_instance.consul_server_03_instance.primary_network_interface.0.primary_ipv4_address}:8501"
-  ]
-}
-
-output "consul_dns_endpoints" {
-  value = [
-    "${ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address}:8600",
-    "${ibm_is_instance.consul_server_02_instance.primary_network_interface.0.primary_ipv4_address}:8600",
-    "${ibm_is_instance.consul_server_03_instance.primary_network_interface.0.primary_ipv4_address}:8600"
-  ]
+# publish consul pkcs12 package
+data "external" "publish_pkcs12" {
+  program = ["python3", "${path.module}/publish_pkcs12.py"]
+  query = {
+    ca_cert     = tls_self_signed_cert.ca_cert.cert_pem
+    ca_key      = tls_private_key.ca_key.private_key_pem
+    client_cert = tls_locally_signed_cert.client_signed.cert_pem
+    client_key  = tls_private_key.client_cert.private_key_pem
+    passphrase  = base64encode(random_string.consul_cluster_key.result)
+  }
 }

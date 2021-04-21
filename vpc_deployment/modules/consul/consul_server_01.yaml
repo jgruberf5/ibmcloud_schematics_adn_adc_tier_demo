@@ -39,7 +39,7 @@ write_files:
         "encrypt": "${cluster_encrypt_key}",
         "leave_on_terminate": true,
         "rejoin_after_leave": true,
-        "bootstrap_expect": 3,
+        "bootstrap": true,
         "server": true,
         "addresses": {
           "https": "0.0.0.0",
@@ -52,8 +52,8 @@ write_files:
           "grpc": -1
         },
         "verify_incoming": false,
-        "verify_outgoing": true,
-        "verify_server_hostname": true,
+        "verify_outgoing": false,
+        "verify_server_hostname": false,
         "ca_file": "/etc/consul/ssl/consul-agent-ca.pem",
         "cert_file": "/etc/consul/ssl/server-consul-0.pem",
         "key_file": "/etc/consul/ssl/server-consul-0-key.pem",
@@ -74,13 +74,15 @@ write_files:
   permissions: '0644'
   content: |
     {
-      "acl_datacenter": "${datacenter}",
-      "acl_master_token": "${cluster_master_token}",
-      "acl_agent_token": "${server_agent_token}",
-      "acl_default_policy": "deny",
+      "primary_datacenter": "${datacenter}",
       "acl": {
         "enabled": true,
-        "enable_token_persistence": true
+        "default_policy": "deny",
+        "enable_token_persistence": true,
+        "tokens": {
+            "master": "${cluster_master_token}",
+            "agent" : "${server_agent_token}"
+        }       
       }
     }
 - owner: root:root

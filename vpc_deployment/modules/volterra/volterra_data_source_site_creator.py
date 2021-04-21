@@ -73,11 +73,11 @@ def assure_site_token(tenant, token, site_token_name):
         sys.exit(1)
 
 
-def assure_fleet(tenant, token, fleet_name, tenant_id, internal_networks):
+def assure_fleet(tenant, token, fleet_name, tenant_id, inside_networks, inside_gateway):
     headers = {
         "Authorization": "APIToken %s" % token
     }
-    if internal_networks:
+    if inside_networks:
         # Does virtual network exist
         try:
             url = "https://%s.console.ves.volterra.io/api/config/namespaces/system/virtual_networks/%s" % (
@@ -88,14 +88,13 @@ def assure_fleet(tenant, token, fleet_name, tenant_id, internal_networks):
         except HTTPError as her:
             if her.code == 404:
                 try:
-                    v_static_routes = []
-                    for net in internal_networks:
-                        v_route = {
-                            "ip_prefixes": [net['cidr']],
-                            "ip_address": net['gw'],
+                    v_static_routes = [
+                        {
+                            "ip_prefixes": inside_networks,
+                            "ip_address": inside_gateway,
                             "attrs": ['ROUTE_ATTR_INSTALL_HOST', 'ROUTE_ATTR_INSTALL_FORWARDING']
                         }
-                        v_static_routes.append(v_route)
+                    ]
                     url = "https://%s.console.ves.volterra.io/api/config/namespaces/system/virtual_networks" % tenant
                     headers['volterra-apigw-tenant'] = tenant
                     headers['content-type'] = 'application/json'
@@ -108,7 +107,7 @@ def assure_fleet(tenant, token, fleet_name, tenant_id, internal_networks):
                                 "ves.io/fleet": fleet_name
                             },
                             "annotations": {},
-                            "description": "Routes internal to %s" % fleet_name,
+                            "description": "Routes inside %s" % fleet_name,
                             "disable": False
                         },
                         "spec": {
@@ -348,8 +347,10 @@ def main():
         sys.stderr.write(
             'tenant, token, site_name, fleet_name inputs required')
         sys.exit(1)
-    if 'internal_networks' not in jsondata:
-        jsondata['internal_networks'] = []
+    if 'inside_networks' not in jsondata:
+        jsondata['inside_networks'] = []
+    if 'inside_gateway' not in jsondata:
+        jsondata['inside_gateway'] = ""
     if 'consul_servers' not in jsondata:
         jsondata['consul_servers'] = []
     if 'ca_cert_encoded' not in jsondata:
@@ -359,7 +360,7 @@ def main():
         jsondata['tenant'], jsondata['token'], jsondata['site_name'])
     fleet_label = assure_fleet(
         jsondata['tenant'], jsondata['token'], jsondata['fleet_name'],
-        tenant_id, json.loads(jsondata['internal_networks']))
+        tenant_id, json.loads(jsondata['inside_networks']),jsondata['inside_gateway'])
     assure_service_discovery(
         jsondata['tenant'], jsondata['token'], jsondata['site_name'],
         tenant_id, json.loads(jsondata['consul_servers']), jsondata['ca_cert_encoded']

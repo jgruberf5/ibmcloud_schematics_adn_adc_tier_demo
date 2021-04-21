@@ -2,15 +2,15 @@
 resource "null_resource" "site_registration_decommission" {
 
   triggers = {
-    site                = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}",
-    tenant              = var.volterra_tenant
-    token               = var.volterra_api_token
-    size                = var.volterra_cluster_size,
-    allow_ssl_tunnels   = var.volterra_ssl_tunnels ? "true" : "false"
-    allow_ipsec_tunnels = var.volterra_ipsec_tunnels ? "true" : "false"
+    site                = var.site_name,
+    tenant              = var.tenant
+    token               = var.api_token
+    size                = var.cluster_size,
+    allow_ssl_tunnels   = var.ssl_tunnels ? "true" : "false"
+    allow_ipsec_tunnels = var.ipsec_tunnels ? "true" : "false"
   }
 
-  depends_on = [ibm_is_instance.volterra_ce_instance]
+  depends_on = [ibm_is_instance.ce_instance]
 
   provisioner "local-exec" {
     when       = create
@@ -27,20 +27,20 @@ resource "null_resource" "site_registration_decommission" {
 
 resource "local_file" "complete_flag" {
   filename   = "${path.module}/complete.flag"
-  content    = random_uuid.namer.result
+  content    = uuid()
   depends_on = [null_resource.site_registration_decommission]
 }
 
 resource "null_resource" "site_token_fleet_delete" {
 
   triggers = {
-    tenant     = var.volterra_tenant
-    token      = var.volterra_api_token
-    site_name  = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}"
-    fleet_name = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}"
+    tenant     = var.tenant
+    token      = var.api_token
+    site_name  = var.site_name
+    fleet_name = var.fleet_name
   }
 
-  depends_on = [ibm_is_instance.volterra_ce_instance]
+  depends_on = [ibm_is_instance.ce_instance]
 
   provisioner "local-exec" {
     when       = destroy

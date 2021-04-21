@@ -163,15 +163,21 @@ variable "volterra_ipsec_tunnels" {
 }
 
 ##################################################################################
-# volterra_internal_networks - Internal reachable networks
+# volterra_internal_networks - Internal reachable network IPv4 CIDRs
 ##################################################################################
 variable "volterra_internal_networks" {
-  type = list(object({
-    cidr = string
-    gw = string
-  }))
+  type = list(string)
   default = [ ]
-  description = "Internal reachable networks"
+  description = "Internal reachable network IPv4 CIDRs"
+}
+
+##################################################################################
+# consul_include - create the Consul cluster instances
+##################################################################################
+variable "consul_include" {
+  type        = bool
+  default     = true
+  description = "create the Consul cluster instances"
 }
 
 ##################################################################################
