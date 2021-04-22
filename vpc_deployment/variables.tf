@@ -27,7 +27,7 @@ variable "ibm_zone" {
 # ibm_vpc_name - The name for the IBM Gen2 VPC
 ##################################################################################
 variable "ibm_vpc_name" {
-  default = ""
+  default     = ""
   description = "The name for the IBM Gen2 VPC"
 }
 
@@ -35,7 +35,7 @@ variable "ibm_vpc_name" {
 # ibm_vpc_index - The index ID for this IBM Gen2 VPC
 ##################################################################################
 variable "ibm_vpc_index" {
-  default = "1"
+  default     = "1"
   description = "The index ID for this IBM Gen2 VPC"
 }
 
@@ -43,7 +43,7 @@ variable "ibm_vpc_index" {
 # ibm_vpc_cidr - The IPv4 VPC cidr to use as the network prefix of the IBM Gen2 VPC
 ##################################################################################
 variable "ibm_vpc_cidr" {
-  default = ""
+  default     = ""
   description = "The IPv4 VPC cidr to use as the network prefix of the IBM Gen2 VPC"
 }
 
@@ -51,7 +51,7 @@ variable "ibm_vpc_cidr" {
 # ibm_transit_gateway_id - The IBM transit gateway ID to connect the VPC
 ##################################################################################
 variable "ibm_transit_gateway_id" {
-  default = ""
+  default     = ""
   description = "The IBM transit gateway ID to connect the VPC"
 }
 
@@ -59,7 +59,7 @@ variable "ibm_transit_gateway_id" {
 # ibm_ssh_key_name - The name of the existing SSH key to inject into infrastructure
 ##################################################################################
 variable "ibm_ssh_key_name" {
-  default = ""
+  default     = ""
   description = "The name of the existing SSH key to inject into infrastructure"
 }
 
@@ -166,8 +166,8 @@ variable "volterra_ipsec_tunnels" {
 # volterra_internal_networks - Internal reachable network IPv4 CIDRs
 ##################################################################################
 variable "volterra_internal_networks" {
-  type = list(string)
-  default = [ ]
+  type        = list(string)
+  default     = []
   description = "Internal reachable network IPv4 CIDRs"
 }
 
