@@ -19,7 +19,7 @@ data "external" "bigip_public_image_ltm" {
 }
 
 resource "ibm_is_image" "bigip_custom_image_all" {
-  name             = "${data.external.bigip_public_image_all.result.image_name}-adn"
+  name             = "bigip-adn-${random_uuid.namer.result}"
   resource_group   = data.ibm_resource_group.group.id
   href             = data.external.bigip_public_image_all.result.image_sql_url
   operating_system = "centos-7-amd64"

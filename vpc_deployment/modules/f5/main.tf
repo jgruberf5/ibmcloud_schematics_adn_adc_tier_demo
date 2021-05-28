@@ -22,6 +22,8 @@ resource "random_password" "admin_password" {
   override_special = "_%@"
 }
 
+resource "random_uuid" "namer" {}
+
 locals {
   template_file    = lookup(local.license_map, var.license_type, local.license_map["none"])
   ha_template_file = var.ha_license_basekey == "" ? local.license_map["none"] : local.license_map["bigiq_regkey"]

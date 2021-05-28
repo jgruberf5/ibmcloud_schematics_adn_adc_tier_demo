@@ -215,10 +215,10 @@ resource "ibm_is_instance" "consul_server_01_instance" {
     subnet          = var.subnet_id
     security_groups = [var.security_group_id]
   }
-  vpc        = var.vpc
-  zone       = var.zone
-  keys       = [var.ssh_key_id]
-  user_data  = data.template_file.consul_server_01.rendered
+  vpc       = var.vpc
+  zone      = var.zone
+  keys      = [var.ssh_key_id]
+  user_data = data.template_file.consul_server_01.rendered
   timeouts {
     create = "60m"
     delete = "120m"
@@ -252,10 +252,10 @@ resource "ibm_is_instance" "consul_server_02_instance" {
     subnet          = var.subnet_id
     security_groups = [var.security_group_id]
   }
-  vpc        = var.vpc
-  zone       = var.zone
-  keys       = [var.ssh_key_id]
-  user_data  = data.template_file.consul_server_02.rendered
+  vpc       = var.vpc
+  zone      = var.zone
+  keys      = [var.ssh_key_id]
+  user_data = data.template_file.consul_server_02.rendered
   timeouts {
     create = "60m"
     delete = "120m"
@@ -291,10 +291,10 @@ resource "ibm_is_instance" "consul_server_03_instance" {
     subnet          = var.subnet_id
     security_groups = [var.security_group_id]
   }
-  vpc        = var.vpc
-  zone       = var.zone
-  keys       = [var.ssh_key_id]
-  user_data  = data.template_file.consul_server_03.rendered
+  vpc       = var.vpc
+  zone      = var.zone
+  keys      = [var.ssh_key_id]
+  user_data = data.template_file.consul_server_03.rendered
   timeouts {
     create = "60m"
     delete = "120m"
@@ -305,10 +305,8 @@ resource "ibm_is_instance" "consul_server_03_instance" {
 data "external" "publish_pkcs12" {
   program = ["python3", "${path.module}/publish_pkcs12.py"]
   query = {
-    ca_cert     = tls_self_signed_cert.ca_cert.cert_pem
-    ca_key      = tls_private_key.ca_key.private_key_pem
-    client_cert = tls_locally_signed_cert.client_signed.cert_pem
-    client_key  = tls_private_key.client_cert.private_key_pem
-    passphrase  = base64encode(random_string.consul_cluster_key.result)
+    ca_cert    = tls_self_signed_cert.ca_cert.cert_pem
+    ca_key     = tls_private_key.ca_key.private_key_pem
+    passphrase = base64encode(random_string.consul_cluster_key.result)
   }
 }

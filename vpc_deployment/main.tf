@@ -1,6 +1,13 @@
-module "consul_cluster" {
-  source            = "./modules/consul"
-  count             = var.consul_include ? 1 : 0
+
+locals {
+  consul_count      = var.consul_include ? 1 : 0
+  consul_vsis_count = var.volterra_voltstack ? 0 : local.consul_count
+  consul_k8s_count  = var.volterra_voltstack ? local.consul_count : 0
+}
+
+module "consul_cluster_vsis" {
+  source            = "./modules/consul_vsis"
+  count             = local.consul_vsis_count
   resource_group    = var.ibm_resource_group
   region            = var.ibm_region
   vpc               = ibm_is_subnet.internal.vpc
@@ -24,7 +31,6 @@ module "volterra_cluster" {
   vpc                  = ibm_is_subnet.internal.vpc
   security_group_id    = ibm_is_vpc.vpc.default_security_group
   ssh_key_id           = data.ibm_is_ssh_key.ssh_key.id
-  profile              = var.volterra_ce_profile
   inside_subnet_id     = ibm_is_subnet.internal.id
   inside_gateway       = cidrhost(ibm_is_subnet.internal.ipv4_cidr_block, 1)
   inside_networks      = var.volterra_internal_networks
@@ -33,14 +39,14 @@ module "volterra_cluster" {
   cluster_size         = var.volterra_cluster_size
   tenant               = var.volterra_tenant
   site_name            = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}"
-  fleet_name           = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}"
+  fleet_label          = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-${var.ibm_vpc_index}-fleet"
   voltstack            = var.volterra_voltstack
   admin_password       = var.volterra_admin_password
   ipsec_tunnels        = var.volterra_ipsec_tunnels
   ssl_tunnels          = var.volterra_ssl_tunnels
   api_token            = var.volterra_api_token
-  consul_ca_cert       = join("", module.consul_cluster.*.datacenter_ca_certificate)
-  consul_https_servers = jsondecode(join("", module.consul_cluster.*.https_endpoints))
+  consul_ca_cert       = join("", module.consul_cluster_vsis.*.datacenter_ca_certificate)
+  consul_https_servers = join("", module.consul_cluster_vsis.*.https_endpoints) == "" ? [] : jsondecode(join("", module.consul_cluster_vsis.*.https_endpoints))
 }
 
 module "f5_devices" {

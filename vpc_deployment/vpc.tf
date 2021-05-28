@@ -49,6 +49,12 @@ resource "ibm_is_subnet" "internal" {
   ipv4_cidr_block = cidrsubnet(var.ibm_vpc_cidr, 4, 1)
 }
 
+resource "ibm_is_public_gateway" "external_gateway" {
+  name = "${var.ibm_vpc_name}-external-gateway"
+  vpc  = ibm_is_vpc.vpc.id
+  zone = "${var.ibm_region}-${var.ibm_zone}"
+}
+
 resource "ibm_is_subnet" "external" {
   name            = "${var.ibm_vpc_name}-${var.ibm_region}-${var.ibm_zone}-external"
   vpc             = ibm_is_vpc.vpc.id
@@ -56,6 +62,7 @@ resource "ibm_is_subnet" "external" {
   resource_group  = data.ibm_resource_group.group.id
   depends_on      = [ibm_is_vpc_address_prefix.vpc_address_prefix]
   ipv4_cidr_block = cidrsubnet(var.ibm_vpc_cidr, 4, 2)
+  public_gateway  = ibm_is_public_gateway.external_gateway.id
 }
 
 data "ibm_is_ssh_key" "ssh_key" {

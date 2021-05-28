@@ -9,7 +9,7 @@ data "external" "bigiq_public_image" {
 }
 
 resource "ibm_is_image" "bigiq_custom_image" {
-  name             = "${data.external.bigiq_public_image.result.image_name}-adn"
+  name             = "bigiq-adn-${random_uuid.namer.result}"
   resource_group   = data.ibm_resource_group.group.id
   href             = data.external.bigiq_public_image.result.image_sql_url
   operating_system = "centos-7-amd64"

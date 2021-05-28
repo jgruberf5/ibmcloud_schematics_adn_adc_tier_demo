@@ -93,11 +93,17 @@ variable "volterra_ce_version" {
 ##################################################################################
 # volterra_ce_profile - The name of the VPC profile to use for the Volterra CE instances
 ##################################################################################
-variable "volterra_ce_profile" {
-  type        = string
-  default     = "cx2-4x8"
-  description = "The name of the VPC profile to use for the Volterra CE instances"
-}
+#
+# Now need to dictate the CE size depending on the deployment
+#
+# Voltmesh  = cx2-4x8
+# Voltstack = bx2-4x16
+#
+#variable "volterra_ce_profile" {
+#  type        = string
+#  default     = "cx2-4x8"
+#  description = "The name of the VPC profile to use for the Volterra CE instances"
+#}
 
 ##################################################################################
 # volterra_tenant - The Volterra tenant (group) name
@@ -129,6 +135,7 @@ variable "volterra_cluster_size" {
 ##################################################################################
 # volterra_voltstack - Include voltstack
 ##################################################################################
+#
 variable "volterra_voltstack" {
   type        = bool
   default     = false

@@ -3,6 +3,7 @@ chpasswd:
   expire: false
   list: |
     admin:${admin_password}
+# in Voltstack, the fleet creation is internal don't need label: ${fleet_label}
 write_files:
 - path: /etc/vpm/basic-auth.json
   permissions: '0644'
@@ -20,7 +21,8 @@ write_files:
       ClusterType: ce
       Config: /etc/vpm/config.yaml
       PrivateNIC: eth0
-      InsideNIC: ${inside_nic}
+      # Voltstack only support 1 NIC deployments
+      # InsideNIC: ${inside_nic}
       Latitude: ${latitude}
       Longitude: ${longitude}
       MauriceEndpoint: https://register.ves.volterra.io
@@ -28,8 +30,8 @@ write_files:
       Token: ${site_token}
       Labels:
         provider: IBM
+        region: ${region}
         hw-model: ${profile}
         hw-vendor: ibm-vpc-gen2
-        ves.io/fleet: ${fleet_name}
 bootcmd:
   - /usr/bin/touch /etc/vpm/passwdchanged

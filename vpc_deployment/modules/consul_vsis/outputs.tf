@@ -30,10 +30,6 @@ output "ca_p12" {
   value = data.external.publish_pkcs12.result.ca_p12_b64
 }
 
-output "client_p12" {
-  value = data.external.publish_pkcs12.result.client_p12_b64
-}
-
 output "encrypt" {
   value = base64encode(random_string.consul_cluster_key.result)
 }

@@ -7,7 +7,7 @@ data "external" "volterra_public_image" {
   }
 }
 resource "ibm_is_image" "ce_custom_image" {
-  name             = "${data.external.volterra_public_image.result.image_name}-adn"
+  name             = "vce-adn-${random_uuid.namer.result}"
   resource_group   = data.ibm_resource_group.group.id
   href             = data.external.volterra_public_image.result.image_sql_url
   operating_system = "centos-7-amd64"

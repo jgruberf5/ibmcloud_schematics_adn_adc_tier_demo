@@ -39,42 +39,37 @@ output "vpc_region_zone" {
 }
 
 output "consul_datacenter" {
-  value = join("", module.consul_cluster.*.datacenter)
+  value = join("", module.consul_cluster_vsis.*.datacenter)
   description = "ADC tier Consul datacenter"
 }
 
 output "consul_datacenter_ca_certificate" {
-  value = join("", module.consul_cluster.*.datacenter_ca_certificate)
+  value = join("", module.consul_cluster_vsis.*.datacenter_ca_certificate)
   description = "ADC tier Consul datacenter CA certificate"
 }
 
 output "consul_client_token" {
-  value = join("", module.consul_cluster.*.client_token)
+  value = join("", module.consul_cluster_vsis.*.client_token)
   description = "ADC tier Consul client ACL token with right to register nodes and service"
 }
 
 output "consul_https_endpoints" {
-  value = join("", module.consul_cluster.*.https_endpoints)
+  value = join("", module.consul_cluster_vsis.*.https_endpoints)
   description = "ADC tier Consul HTTPs endpoints"
 }
 
 output "consul_dns_endpoints" {
-  value = join("", module.consul_cluster.*.dns_endpoints)
+  value = join("", module.consul_cluster_vsis.*.dns_endpoints)
   description = "ADC tier Consul DNS endpoints"
 }
 
 output "consul_ca_p12" {
-  value = join("", module.consul_cluster.*.ca_p12)
+  value = join("", module.consul_cluster_vsis.*.ca_p12)
   description = "ADC tier Consul CA PKCS12 bundle to sign external certificate requests"
 }
 
-output "consul_client_p12" {
-  value = join("", module.consul_cluster.*.client_p12)
-  description = "ADC tier Consul client PKCS12 bundle to join cluster"
-}
-
 output "consul_encrypt" {
-  value = join("", module.consul_cluster.*.encrypt)
+  value = join("", module.consul_cluster_vsis.*.encrypt)
   description = "ADC tier Consul RPC encryption secret"
 }
 

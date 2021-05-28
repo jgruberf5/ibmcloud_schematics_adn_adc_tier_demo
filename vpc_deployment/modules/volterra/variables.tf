@@ -42,15 +42,6 @@ variable "ce_version" {
 }
 
 ##################################################################################
-# profile - The name of the VPC profile to use for the Volterra CE instances
-##################################################################################
-variable "profile" {
-  type        = string
-  default     = "cx2-4x8"
-  description = "The name of the VPC profile to use for the Volterra CE instances"
-}
-
-##################################################################################
 # vpc - The vpc ID within the IBM Cloud region to create the VPC environment
 ##################################################################################
 variable "vpc" {
@@ -93,12 +84,12 @@ variable "site_name" {
 }
 
 ##################################################################################
-# fleet_name - The Volterra Fleet name for this VPC
+# fleet_label - The Volterra Fleet label for this VPC
 ##################################################################################
-variable "fleet_name" {
+variable "fleet_label" {
   type        = string
   default     = ""
-  description = "The Volterra Fleet name for this VPC"
+  description = "The Volterra Fleet label for this VPC"
 }
 
 ##################################################################################
