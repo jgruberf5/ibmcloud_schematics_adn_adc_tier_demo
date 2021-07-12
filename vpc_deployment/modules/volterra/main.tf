@@ -69,6 +69,7 @@ locals {
   ce_profile         = local.profile_map[local.which_stack]
   template_file      = file(local.template_map[local.which_stack])
   create_fip_count   = var.ipsec_tunnels ? var.cluster_size : 0
+  cluster_masters    = var.cluster_size > 2 ? 3 : 1
 }
 
 # lookup compute profile by name
@@ -96,6 +97,8 @@ resource "null_resource" "site" {
     inside_gateway  = var.inside_gateway
     consul_servers  = jsonencode(var.consul_https_servers)
     ca_cert_encoded = base64encode(var.consul_ca_cert)
+    # always force update
+    timestamp       = timestamp()
   }
 
   provisioner "local-exec" {
@@ -180,7 +183,7 @@ resource "null_resource" "site_registration" {
     site                = var.site_name,
     tenant              = var.tenant
     token               = var.api_token
-    size                = var.cluster_size,
+    size                = local.cluster_masters,
     allow_ssl_tunnels   = var.ssl_tunnels ? "true" : "false"
     allow_ipsec_tunnels = var.ipsec_tunnels ? "true" : "false"
     voltstack           = var.voltstack ? "true" : "false"
