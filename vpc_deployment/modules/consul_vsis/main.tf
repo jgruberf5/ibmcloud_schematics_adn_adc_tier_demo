@@ -238,7 +238,7 @@ data "template_file" "consul_server_02" {
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
     datacenter           = var.datacenter
-    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.*.primary_network_interface.0.primary_ipv4_address
+    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.0.primary_network_interface.0.primary_ipv4_address
   }
 }
 
@@ -277,8 +277,8 @@ data "template_file" "consul_server_03" {
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
     datacenter           = var.datacenter
-    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.*.primary_network_interface.0.primary_ipv4_address
-    server_2_ip_address  = ibm_is_instance.consul_server_02_instance.*.primary_network_interface.0.primary_ipv4_address
+    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.0.primary_network_interface.0.primary_ipv4_address
+    server_2_ip_address  = ibm_is_instance.consul_server_02_instance.0.primary_network_interface.0.primary_ipv4_address
   }
 }
 
