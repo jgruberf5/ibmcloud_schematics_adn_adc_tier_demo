@@ -84,6 +84,15 @@ variable "instance_profile" {
 }
 
 ##################################################################################
+# cluster_size - Number of cluster nodes
+##################################################################################
+variable "cluster_size" {
+  type        = string
+  default     = ""
+  description = "Number of cluster nodes"
+}
+
+##################################################################################
 # client_token - UUID token used to register nodes and services 
 ##################################################################################
 variable "client_token" {

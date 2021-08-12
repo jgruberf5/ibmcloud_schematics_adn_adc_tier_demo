@@ -1,12 +1,8 @@
 
-locals {
-  consul_k8s_count  = var.volterra_voltstack ? local.consul_count : 0
-  consul_vsis_count = var.consul_include ? var.consul_cluster_size : 0
-}
-
 module "consul_cluster_vsis" {
   source            = "./modules/consul_vsis"
-  count             = local.consul_vsis_count
+  count             = var.consul_include ? 1 : 0
+  cluster_size      = var.consul_cluster_size
   resource_group    = var.ibm_resource_group
   region            = var.ibm_region
   vpc               = ibm_is_subnet.internal.vpc

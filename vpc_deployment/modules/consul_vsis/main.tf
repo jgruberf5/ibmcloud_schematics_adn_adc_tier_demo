@@ -244,6 +244,7 @@ data "template_file" "consul_server_02" {
 # create server 02
 resource "ibm_is_instance" "consul_server_02_instance" {
   name           = "${var.datacenter}-consul-02"
+  count          = var.cluster_size > 1 ? 1 : 0
   resource_group = data.ibm_resource_group.group.id
   image          = data.ibm_is_image.ubuntu.id
   profile        = data.ibm_is_instance_profile.consul_instance_profile.id
@@ -283,6 +284,7 @@ data "template_file" "consul_server_03" {
 # create server 03
 resource "ibm_is_instance" "consul_server_03_instance" {
   name           = "${var.datacenter}-consul-03"
+  count          = var.cluster_size > 2 ? 1 : 0
   resource_group = data.ibm_resource_group.group.id
   image          = data.ibm_is_image.ubuntu.id
   profile        = data.ibm_is_instance_profile.consul_instance_profile.id
