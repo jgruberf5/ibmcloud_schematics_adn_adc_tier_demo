@@ -53,6 +53,16 @@ output "consul_client_token" {
   description = "ADC tier Consul client ACL token with right to register nodes and service"
 }
 
+output "consul_https_endpoints" {
+  value = join("", module.consul_cluster_vsis.*.https_endpoints)
+  description = "ADC tier Consul HTTPs endpoints"
+}
+
+output "consul_dns_endpoints" {
+  value = join("", module.consul_cluster_vsis.*.dns_endpoints)
+  description = "ADC tier Consul DNS endpoints"
+}
+
 output "consul_ca_p12" {
   value = join("", module.consul_cluster_vsis.*.ca_p12)
   description = "ADC tier Consul CA PKCS12 bundle to sign external certificate requests"
