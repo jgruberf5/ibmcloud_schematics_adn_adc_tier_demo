@@ -61,10 +61,10 @@ locals {
       "longitude" = "-96.8147"
     }
   }
-  # Voltstack is now required .. moving Consul into CE pK8s
   which_stack        = var.voltstack ? "voltstack" : "voltmesh"
   inside_nic         = var.voltstack ? "eth0" : "eth1"
-  secondary_subnets  = var.voltstack ? compact(list("")) : compact(list(var.inside_subnet_id))
+  #secondary_subnets  = var.voltstack ? compact(list("")) : compact(list(var.inside_subnet_id))
+  secondary_subnets  = compact(list(var.inside_subnet_id))
   certified_hardware = element(local.certified_hardware_map[local.which_stack].*, 1)
   ce_profile         = local.profile_map[local.which_stack]
   template_file      = file(local.template_map[local.which_stack])

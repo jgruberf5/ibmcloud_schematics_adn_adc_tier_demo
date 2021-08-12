@@ -1,8 +1,7 @@
 
 locals {
-  consul_count      = var.consul_include ? 1 : 0
-  consul_vsis_count = var.volterra_voltstack ? 0 : local.consul_count
   consul_k8s_count  = var.volterra_voltstack ? local.consul_count : 0
+  consul_vsis_count = var.consul_include ? var.consul_cluster_size : 0
 }
 
 module "consul_cluster_vsis" {

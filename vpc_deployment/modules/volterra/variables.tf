@@ -111,12 +111,12 @@ variable "cluster_size" {
 }
 
 ##################################################################################
-# voltstack - Include voltstack
+# voltstack - Create Voltstack Site
 ##################################################################################
 variable "voltstack" {
   type        = bool
   default     = false
-  description = "Include voltstack"
+  description = "Create Voltstack Site"
 }
 
 ##################################################################################

@@ -133,13 +133,13 @@ variable "volterra_cluster_size" {
 }
 
 ##################################################################################
-# volterra_voltstack - Include voltstack
+# volterra_voltstack - Create Voltstack Site
 ##################################################################################
 #
 variable "volterra_voltstack" {
   type        = bool
   default     = false
-  description = "Include voltstack"
+  description = "Create Voltstack Site"
 }
 
 ##################################################################################
@@ -184,7 +184,16 @@ variable "volterra_internal_networks" {
 variable "consul_include" {
   type        = bool
   default     = true
-  description = "create the Consul cluster instances"
+  description = "Create the Consul cluster instances"
+}
+
+##################################################################################
+# consul_cluster_size - the Consul cluster size
+##################################################################################
+variable "consul_cluster_size" {
+  type        = number
+  default     = 3
+  description = "The Consul cluster size"
 }
 
 ##################################################################################
