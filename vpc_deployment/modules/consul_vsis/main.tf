@@ -207,6 +207,7 @@ data "template_file" "consul_server_01" {
 # create server 01
 resource "ibm_is_instance" "consul_server_01_instance" {
   name           = "${var.datacenter}-consul-01"
+  count          = var.cluster_size > 0 ? 1 : 0
   resource_group = data.ibm_resource_group.group.id
   image          = data.ibm_is_image.ubuntu.id
   profile        = data.ibm_is_instance_profile.consul_instance_profile.id
@@ -237,7 +238,7 @@ data "template_file" "consul_server_02" {
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
     datacenter           = var.datacenter
-    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address
+    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.*.primary_network_interface.0.primary_ipv4_address
   }
 }
 
@@ -276,8 +277,8 @@ data "template_file" "consul_server_03" {
     server_agent_token   = local.server_agent_token
     client_token         = local.client_token
     datacenter           = var.datacenter
-    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.primary_network_interface.0.primary_ipv4_address
-    server_2_ip_address  = ibm_is_instance.consul_server_02_instance.primary_network_interface.0.primary_ipv4_address
+    server_1_ip_address  = ibm_is_instance.consul_server_01_instance.*.primary_network_interface.0.primary_ipv4_address
+    server_2_ip_address  = ibm_is_instance.consul_server_02_instance.*.primary_network_interface.0.primary_ipv4_address
   }
 }
 
